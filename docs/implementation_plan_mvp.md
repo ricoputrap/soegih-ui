@@ -8,6 +8,8 @@
 
 **Tech Stack:** React 19, Vite 7, TypeScript 5.9, TanStack Router v1, TanStack Query v5, TanStack Table v8, React Hook Form v7, Zod v3, shadcn/ui (Radix + Tailwind v4), Recharts, Vitest + React Testing Library, MSW, Playwright
 
+> **E2E Testing Strategy:** This plan integrates E2E test tasks **immediately after each module is completed**, rather than deferring all testing to the end. This ensures continuous verification of user workflows and reduces integration risks. See Task 4 (Playwright setup), then Tasks 8, 13, 15, 19, 21 for module-specific E2E tests.
+
 > **Task numbering:** Task numbers here are the canonical numbers for feature-branch naming (`feat/task-{N}-{description}`) per CLAUDE.md.
 
 ---
@@ -438,7 +440,81 @@ git commit -m "feat(auth): add AuthContext, AuthProvider, and useAuth hook"
 
 ---
 
-### Task 4: TanStack Router Setup & Root Route
+### Task 4: Playwright & E2E Setup
+
+**Files:**
+- Create: `playwright.config.ts`
+- Create: `e2e/fixtures/auth.fixture.ts`
+- Modify: `.env.example`
+
+> **Note:** This task sets up the E2E testing infrastructure required for all downstream E2E tests. Run this early so E2E tests can be executed immediately after each module is complete.
+
+- [ ] **Step 1: Initialize Playwright**
+
+```bash
+pnpm exec playwright install
+```
+
+- [ ] **Step 2: Create `playwright.config.ts`**
+
+```typescript
+import { defineConfig, devices } from "@playwright/test"
+
+export default defineConfig({
+  testDir: "./e2e",
+  fullyParallel: true,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 0,
+  use: {
+    baseURL: "http://localhost:5173",
+    trace: "on-first-retry",
+  },
+  projects: [
+    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+    { name: "mobile-chrome", use: { ...devices["Pixel 5"] } },
+  ],
+  webServer: {
+    command: "pnpm dev",
+    url: "http://localhost:5173",
+    reuseExistingServer: !process.env.CI,
+  },
+})
+```
+
+- [ ] **Step 3: Create `e2e/fixtures/auth.fixture.ts`**
+
+```typescript
+import { type Page } from "@playwright/test"
+
+const TEST_EMAIL = process.env.E2E_TEST_EMAIL ?? "test@example.com"
+const TEST_PASSWORD = process.env.E2E_TEST_PASSWORD ?? "password123"
+
+export async function loginAs(page: Page, email = TEST_EMAIL, password = TEST_PASSWORD) {
+  await page.goto("/login")
+  await page.fill('[placeholder="you@example.com"]', email)
+  await page.fill('[placeholder="••••••••"]', password)
+  await page.click('button[type="submit"]')
+  await page.waitForURL("**/dashboard")
+}
+```
+
+- [ ] **Step 4: Add E2E env vars to `.env.example`**
+
+```
+E2E_TEST_EMAIL=test@example.com
+E2E_TEST_PASSWORD=password123
+```
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add playwright.config.ts e2e/ .env.example
+git commit -m "test(e2e): set up Playwright config and auth fixture"
+```
+
+---
+
+### Task 5: TanStack Router Setup & Root Route
 
 **Files:**
 - Modify: `src/main.tsx`
@@ -538,7 +614,7 @@ git commit -m "feat(router): set up TanStack Router with root route and QueryCli
 
 ## Chunk 2: Authentication
 
-### Task 5: Auth Service
+### Task 6: Auth Service
 
 **Files:**
 - Create: `src/modules/auth/types/auth.types.ts`
@@ -646,7 +722,7 @@ git commit -m "feat(auth): add auth service (login, signup, logout)"
 
 ---
 
-### Task 6: Login & Signup Pages
+### Task 7: Login & Signup Pages
 
 **Files:**
 - Create: `src/routes/_auth.tsx`
@@ -822,9 +898,67 @@ git commit -m "feat(auth): add login and signup pages with form validation"
 
 ---
 
+### Task 8: Auth E2E Tests
+
+**Files:**
+- Create: `e2e/auth.spec.ts`
+
+> **Prerequisite:** Playwright setup (Task 4) must be complete before running E2E tests. Requires backend running on `http://localhost:3000/api/v1`.
+
+- [ ] **Step 1: Create `e2e/auth.spec.ts`**
+
+```typescript
+import { test, expect } from "@playwright/test"
+import { loginAs } from "./fixtures/auth.fixture"
+
+test.describe("Authentication", () => {
+  test("login with valid credentials redirects to dashboard", async ({ page }) => {
+    await loginAs(page)
+    await expect(page).toHaveURL(/dashboard/)
+    await expect(page.getByText("Dashboard")).toBeVisible()
+  })
+
+  test("login with invalid credentials shows error", async ({ page }) => {
+    await page.goto("/login")
+    await page.fill('[placeholder="you@example.com"]', "wrong@example.com")
+    await page.fill('[placeholder="••••••••"]', "wrongpass")
+    await page.click('button[type="submit"]')
+    await expect(page.getByText("Invalid email or password")).toBeVisible()
+  })
+
+  test("unauthenticated user redirected to login", async ({ page }) => {
+    await page.goto("/dashboard")
+    await expect(page).toHaveURL(/login/)
+  })
+
+  test("logout clears session and redirects to login", async ({ page }) => {
+    await loginAs(page)
+    await page.getByText("Logout").click()
+    await expect(page).toHaveURL(/login/)
+  })
+})
+```
+
+- [ ] **Step 2: Run auth E2E tests**
+
+```bash
+pnpm exec playwright test e2e/auth.spec.ts
+```
+
+Expected: All 4 tests pass (requires running backend)
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add e2e/auth.spec.ts
+git commit -m "test(e2e): add auth flow E2E tests"
+```
+
+---
+
 ## Chunk 3: App Shell
 
-### Task 7: App Layout & Protected Route
+### Task 9: App Layout & Protected Route
 
 **Files:**
 - Create: `src/shared/components/AppLayout.tsx`
@@ -1013,7 +1147,7 @@ git commit -m "feat(shell): add app layout with sidebar, protected route, and sh
 
 ## Chunk 4: Wallets Module
 
-### Task 8: Wallet Service & Hooks
+### Task 10: Wallet Service & Hooks
 
 **Files:**
 - Create: `src/modules/wallet/types/wallet.types.ts`
@@ -1167,7 +1301,7 @@ git commit -m "feat(wallet): add wallet service, types, and TanStack Query hooks
 
 ---
 
-### Task 9: Wallet Form Component
+### Task 11: Wallet Form Component
 
 **Files:**
 - Create: `src/modules/wallet/components/WalletForm.tsx`
@@ -1266,7 +1400,7 @@ git commit -m "feat(wallet): add WalletForm dialog component"
 
 ---
 
-### Task 10: Wallet List Page
+### Task 12: Wallet List Page
 
 **Files:**
 - Create: `src/modules/wallet/components/WalletTable.tsx`
@@ -1530,9 +1664,65 @@ git commit -m "feat(wallet): add wallet list page with total balance, table (des
 
 ---
 
+### Task 13: Wallet E2E Tests
+
+**Files:**
+- Create: `e2e/wallet.spec.ts`
+
+> **Prerequisite:** Task 4 (Playwright setup) and Task 8 (Auth E2E) must be complete. Backend must be running.
+
+- [ ] **Step 1: Create `e2e/wallet.spec.ts`**
+
+```typescript
+import { test, expect } from "@playwright/test"
+import { loginAs } from "./fixtures/auth.fixture"
+
+test.describe("Wallets", () => {
+  test.beforeEach(async ({ page }) => { await loginAs(page) })
+
+  test("shows wallet list page", async ({ page }) => {
+    await page.goto("/wallets")
+    await expect(page.getByText("Wallets")).toBeVisible()
+  })
+
+  test("creates a new wallet", async ({ page }) => {
+    await page.goto("/wallets")
+    await page.getByText("Add Wallet").click()
+    await page.fill('[placeholder=""]', "Test Cash")
+    await page.click('button[type="submit"]')
+    await expect(page.getByText("Test Cash")).toBeVisible()
+  })
+
+  test("deletes a wallet", async ({ page }) => {
+    await page.goto("/wallets")
+    await page.getByText("Test Cash").waitFor()
+    await page.getByRole("button", { name: "Delete" }).first().click()
+    await page.getByRole("button", { name: "Delete" }).last().click()
+    await expect(page.getByText("Test Cash")).not.toBeVisible({ timeout: 5000 })
+  })
+})
+```
+
+- [ ] **Step 2: Run wallet E2E tests**
+
+```bash
+pnpm exec playwright test e2e/wallet.spec.ts
+```
+
+Expected: All tests pass
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add e2e/wallet.spec.ts
+git commit -m "test(e2e): add wallet CRUD E2E tests"
+```
+
+---
+
 ## Chunk 5: Categories Module
 
-### Task 11: Categories Service, Hooks & Page
+### Task 14: Categories Service, Hooks & Page
 
 **Files:**
 - Create: `src/modules/category/types/category.types.ts`
@@ -1696,9 +1886,65 @@ git commit -m "feat(category): add category module with list, create, edit, dele
 
 ---
 
+### Task 15: Category E2E Tests
+
+**Files:**
+- Create: `e2e/category.spec.ts`
+
+> **Prerequisite:** Task 4 (Playwright setup) and Task 8 (Auth E2E) must be complete. Backend must be running.
+
+- [ ] **Step 1: Create `e2e/category.spec.ts`**
+
+```typescript
+import { test, expect } from "@playwright/test"
+import { loginAs } from "./fixtures/auth.fixture"
+
+test.describe("Categories", () => {
+  test.beforeEach(async ({ page }) => { await loginAs(page) })
+
+  test("shows category list page", async ({ page }) => {
+    await page.goto("/categories")
+    await expect(page.getByText("Categories")).toBeVisible()
+  })
+
+  test("creates a new category", async ({ page }) => {
+    await page.goto("/categories")
+    await page.getByText("Add Category").click()
+    await page.fill('[placeholder=""]', "Food")
+    await page.click('button[type="submit"]')
+    await expect(page.getByText("Food")).toBeVisible()
+  })
+
+  test("deletes a category", async ({ page }) => {
+    await page.goto("/categories")
+    await page.getByText("Food").waitFor()
+    await page.getByRole("button", { name: "Delete" }).first().click()
+    await page.getByRole("button", { name: "Delete" }).last().click()
+    await expect(page.getByText("Food")).not.toBeVisible({ timeout: 5000 })
+  })
+})
+```
+
+- [ ] **Step 2: Run category E2E tests**
+
+```bash
+pnpm exec playwright test e2e/category.spec.ts
+```
+
+Expected: All tests pass
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add e2e/category.spec.ts
+git commit -m "test(e2e): add category CRUD E2E tests"
+```
+
+---
+
 ## Chunk 6: Transactions Module
 
-### Task 12: Transaction Service & Hooks (Server-side Pagination)
+### Task 16: Transaction Service & Hooks (Server-side Pagination)
 
 **Files:**
 - Create: `src/modules/transaction/types/transaction.types.ts`
@@ -1873,7 +2119,7 @@ git commit -m "feat(transaction): add transaction service and hooks with server-
 
 ---
 
-### Task 13: Transaction Form
+### Task 17: Transaction Form
 
 **Files:**
 - Create: `src/modules/transaction/components/TransactionForm.tsx`
@@ -2023,7 +2269,7 @@ git commit -m "feat(transaction): add TransactionForm with conditional expense/i
 
 ---
 
-### Task 14: Transaction List Page
+### Task 18: Transaction List Page
 
 > **MVP scope note:** Transaction **edit** is intentionally out of scope for MVP. The API permits updating `note`, `category_id`, and `occurred_at` only (type and amount are immutable). Add an edit flow in a post-MVP task if needed.
 
@@ -2233,9 +2479,65 @@ git commit -m "feat(transaction): add transaction list page with server-side pag
 
 ---
 
+### Task 19: Transaction E2E Tests
+
+**Files:**
+- Create: `e2e/transaction.spec.ts`
+
+> **Prerequisite:** Task 4 (Playwright setup) and Task 8 (Auth E2E) must be complete. Wallet and Category modules should exist for this test. Backend must be running.
+
+- [ ] **Step 1: Create `e2e/transaction.spec.ts`**
+
+```typescript
+import { test, expect } from "@playwright/test"
+import { loginAs } from "./fixtures/auth.fixture"
+
+test.describe("Transactions", () => {
+  test.beforeEach(async ({ page }) => { await loginAs(page) })
+
+  test("shows transaction list page", async ({ page }) => {
+    await page.goto("/transactions")
+    await expect(page.getByText("Transactions")).toBeVisible()
+  })
+
+  test("can open add transaction form", async ({ page }) => {
+    await page.goto("/transactions")
+    await page.getByText("Add Transaction").click()
+    await expect(page.getByText("Add Transaction")).toBeVisible()
+  })
+
+  test("form shows correct fields for expense type", async ({ page }) => {
+    await page.goto("/transactions")
+    await page.getByText("Add Transaction").click()
+    const typeSelect = page.locator('select').first()
+    await typeSelect.selectOption("expense")
+    // Wallet and Category fields should be visible for expense
+    await expect(page.getByText(/Wallet/i)).toBeVisible()
+    await expect(page.getByText(/Category/i)).toBeVisible()
+  })
+})
+```
+
+- [ ] **Step 2: Run transaction E2E tests**
+
+```bash
+pnpm exec playwright test e2e/transaction.spec.ts
+```
+
+Expected: All tests pass
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add e2e/transaction.spec.ts
+git commit -m "test(e2e): add transaction creation and list E2E tests"
+```
+
+---
+
 ## Chunk 7: Dashboard Module
 
-### Task 15: Dashboard Service & Page
+### Task 20: Dashboard Service & Page
 
 **Files:**
 - Create: `src/modules/dashboard/types/dashboard.types.ts`
@@ -2445,9 +2747,58 @@ git commit -m "feat(dashboard): add dashboard with summary cards, pie chart, and
 
 ---
 
+### Task 21: Dashboard E2E Tests
+
+**Files:**
+- Create: `e2e/dashboard.spec.ts`
+
+> **Prerequisite:** Task 4 (Playwright setup) and Task 8 (Auth E2E) must be complete. Dashboard module must be implemented. Backend must be running.
+
+- [ ] **Step 1: Create `e2e/dashboard.spec.ts`**
+
+```typescript
+import { test, expect } from "@playwright/test"
+import { loginAs } from "./fixtures/auth.fixture"
+
+test.describe("Dashboard", () => {
+  test.beforeEach(async ({ page }) => { await loginAs(page) })
+
+  test("shows dashboard metrics", async ({ page }) => {
+    await page.goto("/dashboard")
+    await expect(page.getByText("Net Worth")).toBeVisible()
+    await expect(page.getByText(/Income/)).toBeVisible()
+    await expect(page.getByText(/Expense/)).toBeVisible()
+  })
+
+  test("month picker changes the selected month", async ({ page }) => {
+    await page.goto("/dashboard")
+    const picker = page.locator('input[type="month"]')
+    await picker.fill("2026-01")
+    await expect(picker).toHaveValue("2026-01")
+  })
+})
+```
+
+- [ ] **Step 2: Run dashboard E2E tests**
+
+```bash
+pnpm exec playwright test e2e/dashboard.spec.ts
+```
+
+Expected: All tests pass
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add e2e/dashboard.spec.ts
+git commit -m "test(e2e): add dashboard metrics and month picker E2E tests"
+```
+
+---
+
 ## Chunk 8: AI Chat Module
 
-### Task 16: AI Chat Service & Interface
+### Task 22: AI Chat Service & Interface
 
 **Files:**
 - Create: `src/modules/ai/types/ai.types.ts`
@@ -2677,7 +3028,7 @@ git commit -m "feat(ai): add AI chat interface with transaction confirmation car
 
 ## Chunk 9: Sentry & Error Handling
 
-### Task 17: Sentry Setup & Error Boundary
+### Task 23: Sentry Setup & Error Boundary
 
 **Files:**
 - Modify: `src/main.tsx`
@@ -2755,262 +3106,9 @@ git commit -m "feat(monitoring): add Sentry initialization and ErrorBoundary com
 
 ---
 
-## Chunk 10: E2E Tests
-
-### Task 18: Playwright Setup
-
-**Files:**
-- Create: `playwright.config.ts`
-- Create: `e2e/fixtures/auth.fixture.ts`
-
-- [ ] **Step 1: Initialize Playwright**
-
-```bash
-pnpm exec playwright install
-```
-
-- [ ] **Step 2: Create `playwright.config.ts`**
-
-```typescript
-import { defineConfig, devices } from "@playwright/test"
-
-export default defineConfig({
-  testDir: "./e2e",
-  fullyParallel: true,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  use: {
-    baseURL: "http://localhost:5173",
-    trace: "on-first-retry",
-  },
-  projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
-    { name: "mobile-chrome", use: { ...devices["Pixel 5"] } },
-  ],
-  webServer: {
-    command: "pnpm dev",
-    url: "http://localhost:5173",
-    reuseExistingServer: !process.env.CI,
-  },
-})
-```
-
-- [ ] **Step 3: Create `e2e/fixtures/auth.fixture.ts`**
-
-```typescript
-import { type Page } from "@playwright/test"
-
-const TEST_EMAIL = process.env.E2E_TEST_EMAIL ?? "test@example.com"
-const TEST_PASSWORD = process.env.E2E_TEST_PASSWORD ?? "password123"
-
-export async function loginAs(page: Page, email = TEST_EMAIL, password = TEST_PASSWORD) {
-  await page.goto("/login")
-  await page.fill('[placeholder="you@example.com"]', email)
-  await page.fill('[placeholder="••••••••"]', password)
-  await page.click('button[type="submit"]')
-  await page.waitForURL("**/dashboard")
-}
-```
-
-- [ ] **Step 4: Add E2E env vars to `.env.example`**
-
-```
-E2E_TEST_EMAIL=test@example.com
-E2E_TEST_PASSWORD=password123
-```
-
-- [ ] **Step 5: Commit**
-
-```bash
-git add playwright.config.ts e2e/ .env.example
-git commit -m "test(e2e): add Playwright config and auth fixture"
-```
-
----
-
-### Task 19: Auth E2E Tests
-
-**Files:**
-- Create: `e2e/auth.spec.ts`
-
-- [ ] **Step 1: Create `e2e/auth.spec.ts`**
-
-```typescript
-import { test, expect } from "@playwright/test"
-import { loginAs } from "./fixtures/auth.fixture"
-
-test.describe("Authentication", () => {
-  test("login with valid credentials redirects to dashboard", async ({ page }) => {
-    await loginAs(page)
-    await expect(page).toHaveURL(/dashboard/)
-    await expect(page.getByText("Dashboard")).toBeVisible()
-  })
-
-  test("login with invalid credentials shows error", async ({ page }) => {
-    await page.goto("/login")
-    await page.fill('[placeholder="you@example.com"]', "wrong@example.com")
-    await page.fill('[placeholder="••••••••"]', "wrongpass")
-    await page.click('button[type="submit"]')
-    await expect(page.getByText("Invalid email or password")).toBeVisible()
-  })
-
-  test("unauthenticated user redirected to login", async ({ page }) => {
-    await page.goto("/dashboard")
-    await expect(page).toHaveURL(/login/)
-  })
-
-  test("logout clears session and redirects to login", async ({ page }) => {
-    await loginAs(page)
-    await page.getByText("Logout").click()
-    await expect(page).toHaveURL(/login/)
-  })
-})
-```
-
-- [ ] **Step 2: Run auth E2E tests**
-
-```bash
-pnpm exec playwright test e2e/auth.spec.ts
-```
-
-Expected: All 4 tests pass (requires running backend)
-
-- [ ] **Step 3: Commit**
-
-```bash
-git add e2e/auth.spec.ts
-git commit -m "test(e2e): add auth flow E2E tests"
-```
-
----
-
-### Task 20: Wallet, Category & Transaction E2E Tests
-
-**Files:**
-- Create: `e2e/wallet.spec.ts`
-- Create: `e2e/category.spec.ts`
-- Create: `e2e/transaction.spec.ts`
-- Create: `e2e/dashboard.spec.ts`
-
-- [ ] **Step 1: Create `e2e/wallet.spec.ts`**
-
-```typescript
-import { test, expect } from "@playwright/test"
-import { loginAs } from "./fixtures/auth.fixture"
-
-test.describe("Wallets", () => {
-  test.beforeEach(async ({ page }) => { await loginAs(page) })
-
-  test("shows wallet list page", async ({ page }) => {
-    await page.goto("/wallets")
-    await expect(page.getByText("Wallets")).toBeVisible()
-  })
-
-  test("creates a new wallet", async ({ page }) => {
-    await page.goto("/wallets")
-    await page.getByText("Add Wallet").click()
-    await page.fill('[placeholder=""]', "Test Cash")
-    await page.click('button[type="submit"]')
-    await expect(page.getByText("Test Cash")).toBeVisible()
-  })
-
-  test("deletes a wallet", async ({ page }) => {
-    await page.goto("/wallets")
-    await page.getByText("Test Cash").waitFor()
-    await page.getByRole("button", { name: "Delete" }).first().click()
-    await page.getByRole("button", { name: "Delete" }).last().click()
-    await expect(page.getByText("Test Cash")).not.toBeVisible({ timeout: 5000 })
-  })
-})
-```
-
-- [ ] **Step 2: Create `e2e/category.spec.ts`**
-
-```typescript
-import { test, expect } from "@playwright/test"
-import { loginAs } from "./fixtures/auth.fixture"
-
-test.describe("Categories", () => {
-  test.beforeEach(async ({ page }) => { await loginAs(page) })
-
-  test("shows category list page", async ({ page }) => {
-    await page.goto("/categories")
-    await expect(page.getByText("Categories")).toBeVisible()
-  })
-
-  test("creates a new category", async ({ page }) => {
-    await page.goto("/categories")
-    await page.getByText("Add Category").click()
-    await page.fill('[placeholder=""]', "Food")
-    await page.click('button[type="submit"]')
-    await expect(page.getByText("Food")).toBeVisible()
-  })
-})
-```
-
-- [ ] **Step 3: Create `e2e/transaction.spec.ts`**
-
-```typescript
-import { test, expect } from "@playwright/test"
-import { loginAs } from "./fixtures/auth.fixture"
-
-test.describe("Transactions", () => {
-  test.beforeEach(async ({ page }) => { await loginAs(page) })
-
-  test("shows transaction list page", async ({ page }) => {
-    await page.goto("/transactions")
-    await expect(page.getByText("Transactions")).toBeVisible()
-  })
-
-  test("can open add transaction form", async ({ page }) => {
-    await page.goto("/transactions")
-    await page.getByText("Add Transaction").click()
-    await expect(page.getByText("Add Transaction")).toBeVisible()
-  })
-})
-```
-
-- [ ] **Step 4: Create `e2e/dashboard.spec.ts`**
-
-```typescript
-import { test, expect } from "@playwright/test"
-import { loginAs } from "./fixtures/auth.fixture"
-
-test.describe("Dashboard", () => {
-  test.beforeEach(async ({ page }) => { await loginAs(page) })
-
-  test("shows dashboard metrics", async ({ page }) => {
-    await page.goto("/dashboard")
-    await expect(page.getByText("Net Worth")).toBeVisible()
-    await expect(page.getByText(/Income/)).toBeVisible()
-    await expect(page.getByText(/Expense/)).toBeVisible()
-  })
-
-  test("month picker changes the selected month", async ({ page }) => {
-    await page.goto("/dashboard")
-    const picker = page.locator('input[type="month"]')
-    await picker.fill("2026-01")
-    await expect(picker).toHaveValue("2026-01")
-  })
-})
-```
-
-- [ ] **Step 5: Run all E2E tests**
-
-```bash
-pnpm exec playwright test
-```
-
-- [ ] **Step 6: Commit**
-
-```bash
-git add e2e/
-git commit -m "test(e2e): add wallet, category, transaction, dashboard E2E tests"
-```
-
----
-
 ## Appendix: Running Tests
+
+### Unit Tests
 
 ```bash
 # Unit tests (watch mode)
@@ -3021,19 +3119,43 @@ pnpm test:run
 
 # Unit test coverage
 pnpm test:coverage
+```
 
-# E2E tests (requires backend running)
+### E2E Tests
+
+> **Note:** E2E tests are now integrated into the implementation plan. Each module's completion includes E2E test verification. All E2E tests require the backend running on `http://localhost:3000/api/v1`.
+
+```bash
+# Run all E2E tests (requires backend running)
 pnpm exec playwright test
 
-# E2E tests in headed mode
+# E2E tests in headed mode (useful for debugging)
 pnpm exec playwright test --headed
 
 # E2E specific file
 pnpm exec playwright test e2e/wallet.spec.ts
+pnpm exec playwright test e2e/auth.spec.ts
+pnpm exec playwright test e2e/category.spec.ts
+pnpm exec playwright test e2e/transaction.spec.ts
+pnpm exec playwright test e2e/dashboard.spec.ts
 
-# E2E debug mode
+# E2E debug mode (interactive)
 pnpm exec playwright test --debug
+
+# E2E debug specific test
+pnpm exec playwright test e2e/wallet.spec.ts --debug
 ```
+
+### E2E Testing Strategy
+
+- **Task 4**: Playwright setup (done once early)
+- **Task 8**: Auth E2E tests (verify login/logout/redirect flows)
+- **Task 13**: Wallet E2E tests (verify wallet CRUD operations)
+- **Task 15**: Category E2E tests (verify category CRUD operations)
+- **Task 19**: Transaction E2E tests (verify transaction creation and forms)
+- **Task 21**: Dashboard E2E tests (verify dashboard metrics and month picker)
+
+Run the E2E tests for each module **immediately after** that module is complete to ensure end-to-end functionality.
 
 ## Appendix: Environment Variables
 

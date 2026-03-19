@@ -324,7 +324,7 @@ git commit -m "feat(shared): add API client with auth interceptor and token help
 - Create: `src/shared/auth/auth.context.tsx`
 - Create: `src/shared/auth/use-auth.ts`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `src/shared/auth/__tests__/auth.context.test.tsx`:
 ```typescript
@@ -353,7 +353,7 @@ describe("AuthContext", () => {
 })
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 ```bash
 pnpm test src/shared/auth/__tests__/auth.context.test.tsx
@@ -361,7 +361,7 @@ pnpm test src/shared/auth/__tests__/auth.context.test.tsx
 
 Expected: FAIL — module not found
 
-- [ ] **Step 3: Create `src/shared/auth/auth.context.tsx`**
+- [x] **Step 3: Create `src/shared/auth/auth.context.tsx`**
 
 ```typescript
 import React, { createContext, useState, useCallback } from "react"
@@ -410,7 +410,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 }
 ```
 
-- [ ] **Step 4: Create `src/shared/auth/use-auth.ts`**
+- [x] **Step 4: Create `src/shared/auth/use-auth.ts`**
 
 ```typescript
 import { useContext } from "react"
@@ -423,7 +423,7 @@ export function useAuth() {
 }
 ```
 
-- [ ] **Step 5: Run test to verify it passes**
+- [x] **Step 5: Run test to verify it passes**
 
 ```bash
 pnpm test src/shared/auth/__tests__/auth.context.test.tsx
@@ -431,7 +431,7 @@ pnpm test src/shared/auth/__tests__/auth.context.test.tsx
 
 Expected: PASS
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/shared/auth/

@@ -185,7 +185,7 @@ git commit -m "chore(setup): install tanstack router/query/table, rhf, zod, rech
 - Create: `src/shared/api/types.ts`
 - Create: `src/shared/auth/token.ts`
 
-- [ ] **Step 1: Write the failing test for token helpers**
+- [x] **Step 1: Write the failing test for token helpers**
 
 Create `src/shared/auth/__tests__/token.test.ts`:
 ```typescript
@@ -212,7 +212,7 @@ describe("token helpers", () => {
 })
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 ```bash
 pnpm test src/shared/auth/__tests__/token.test.ts
@@ -220,7 +220,7 @@ pnpm test src/shared/auth/__tests__/token.test.ts
 
 Expected: FAIL — `token` module not found
 
-- [ ] **Step 3: Create `src/shared/auth/token.ts`**
+- [x] **Step 3: Create `src/shared/auth/token.ts`**
 
 ```typescript
 const TOKEN_KEY = "auth_token"
@@ -238,7 +238,7 @@ export function clearToken(): void {
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 ```bash
 pnpm test src/shared/auth/__tests__/token.test.ts
@@ -246,7 +246,7 @@ pnpm test src/shared/auth/__tests__/token.test.ts
 
 Expected: PASS (3 tests)
 
-- [ ] **Step 5: Create `src/shared/api/types.ts`**
+- [x] **Step 5: Create `src/shared/api/types.ts`**
 
 ```typescript
 export interface PaginatedResponse<T> {
@@ -267,7 +267,7 @@ export interface ApiError {
 }
 ```
 
-- [ ] **Step 6: Create `src/shared/api/client.ts`**
+- [x] **Step 6: Create `src/shared/api/client.ts`**
 
 ```typescript
 import axios from "axios"
@@ -300,14 +300,14 @@ apiClient.interceptors.response.use(
 )
 ```
 
-- [ ] **Step 7: Create `.env.example`**
+- [x] **Step 7: Create `.env.example`**
 
 ```
 VITE_API_BASE_URL=http://localhost:3000/api/v1
 VITE_SENTRY_DSN=
 ```
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add src/shared/ .env.example

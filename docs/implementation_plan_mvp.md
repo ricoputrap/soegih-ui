@@ -104,7 +104,7 @@ e2e/
 - Create: `vite.config.ts`
 - Create: `vitest.setup.ts`
 
-- [ ] **Step 1: Install runtime dependencies**
+- [x] **Step 1: Install runtime dependencies**
 
 ```bash
 pnpm add @tanstack/react-router @tanstack/react-query @tanstack/react-table
@@ -114,7 +114,7 @@ pnpm add recharts
 pnpm add @sentry/react
 ```
 
-- [ ] **Step 2: Install dev dependencies**
+- [x] **Step 2: Install dev dependencies**
 
 ```bash
 pnpm add -D @tanstack/router-plugin @tanstack/router-devtools @tanstack/react-query-devtools
@@ -124,7 +124,7 @@ pnpm add -D msw
 pnpm add -D @playwright/test
 ```
 
-- [ ] **Step 3: Update `vite.config.ts`**
+- [x] **Step 3: Update `vite.config.ts`**
 
 ```typescript
 import { defineConfig } from "vite"
@@ -146,13 +146,13 @@ export default defineConfig({
 })
 ```
 
-- [ ] **Step 4: Create `vitest.setup.ts`**
+- [x] **Step 4: Create `vitest.setup.ts`**
 
 ```typescript
 import "@testing-library/jest-dom"
 ```
 
-- [ ] **Step 5: Add test script to `package.json`**
+- [x] **Step 5: Add test script to `package.json`**
 
 Add to `"scripts"`:
 ```json
@@ -161,7 +161,7 @@ Add to `"scripts"`:
 "test:coverage": "vitest run --coverage"
 ```
 
-- [ ] **Step 6: Run the dev server to confirm no errors**
+- [x] **Step 6: Run the dev server to confirm no errors**
 
 ```bash
 pnpm dev
@@ -169,7 +169,7 @@ pnpm dev
 
 Expected: Vite starts without errors on `http://localhost:5173`
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add package.json vite.config.ts vitest.setup.ts pnpm-lock.yaml

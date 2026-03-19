@@ -37,7 +37,11 @@ Where `{N}` is the task number from `docs/implementation_plan_mvp.md` and `{desc
    pnpm test
    ```
 
-4. **Commit with conventional commit message**:
+4. **Update completion status** in `docs/implementation_plan_mvp.md`:
+   - Mark all completed task steps with `- [x]` (checkbox syntax)
+   - Do this immediately when steps are completed, before commit
+
+5. **Commit with conventional commit message**:
 
    ```
    feat(scope): description
@@ -45,14 +49,14 @@ Where `{N}` is the task number from `docs/implementation_plan_mvp.md` and `{desc
    - Task {N}: bullet list of changes
    ```
 
-5. **Push to origin and open PR**:
+6. **Push to origin and open PR**:
 
    ```bash
    git push -u origin feat/task-{N}-{description}
    gh pr create --title "Task {N}: {description}" --body "..."
    ```
 
-6. **Code review & tests pass** → merge to master via PR (no force-push)
+7. **Code review & tests pass** → merge to master via PR (no force-push)
 
 ### Multi-File Changes & Planning
 
@@ -149,6 +153,7 @@ All documents in the "docs/" directory are **living documents**—they should re
 - Use text-based ASCII diagrams for flows, architecture, entity relationships, and system design
 - Focus documentation on **"what exists now"**, not "what will be implemented"
 - Update **CHANGELOG.md** when features merge to master; include task number and brief summary
+- **Update `implementation_plan_mvp.md` completion status immediately** when task steps are completed (change `- [ ]` to `- [x]`)
 - When documentation becomes stale, update it immediately—don't let it fall behind the codebase
 
 #### When to Update What

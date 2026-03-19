@@ -127,17 +127,35 @@ Examples:
 
 ### Living Documentation
 
-All documentation is kept in sync with implementation:
+**CRITICAL RULE:** All documentation is kept in sync with implementation. Update these documents **immediately** when:
+- Features are added or removed
+- Architecture changes
+- New components or modules are created
+- Tech stack or dependencies change
 
-- **[docs/README.md](docs/README.md)** — Documentation index
-- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** — High-level system overview with ASCII diagrams; links to actual code
-- **[docs/CHANGELOG.md](docs/CHANGELOG.md)** — Updated per chunk with completed tasks
-- **[docs/implementation_plan_mvp.md](docs/implementation_plan_mvp.md)** — MVP task list; source of task numbers for branch naming
+All documents in the "docs/" directory are **living documents**—they should reflect the current state of the codebase at all times.
 
-### Documentation Guidelines
+#### Documentation Files
 
-All documents in the "docs/" directory should always be updated (if necessary) whenever we made any adjustments in this project.
+- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** — High-level system overview with ASCII diagrams, directory structure, data flows, design decisions; links to actual code in `/src/`
+- **[docs/CHANGELOG.md](docs/CHANGELOG.md)** — Versioned changelog; updated per task/feature with completed work
+- **[docs/implementation_plan_mvp.md](docs/implementation_plan_mvp.md)** — MVP task list (source of task numbers for branch naming)
+- **[docs/project_spec.md](docs/project_spec.md)** — Full technical specification (stack, API schema, UI/UX principles, naming conventions)
+- **[docs/API.md](docs/API.md)** — Backend API endpoint reference
 
-- Keep **ARCHITECTURE.md** high-level and visual; link to actual files in `/src` rather than duplicating code
-- Use text-based ASCII diagrams for flows, architecture, and entity relationships
-- Focus documentation on "what exists now", not "what will be implemented"
+#### Documentation Guidelines
+
+- Keep **ARCHITECTURE.md** high-level and visual; link to actual files in `/src/` rather than duplicating code
+- Use text-based ASCII diagrams for flows, architecture, entity relationships, and system design
+- Focus documentation on **"what exists now"**, not "what will be implemented"
+- Update **CHANGELOG.md** when features merge to master; include task number and brief summary
+- When documentation becomes stale, update it immediately—don't let it fall behind the codebase
+
+#### When to Update What
+
+| File | When to Update | What to Add |
+|------|---|---|
+| **ARCHITECTURE.md** | New feature module added, routing changes, tech added/removed | Directory structure updates, data flow diagrams, design decisions |
+| **CHANGELOG.md** | Feature/fix merged to master | Version bump, task number, bullet-point summary of changes |
+| **project_spec.md** | Requirements change, new decisions made | Updated stack, API changes, UI/UX principle changes |
+| **API.md** | Backend endpoint added/changed | New endpoint, request/response schema, auth requirements |

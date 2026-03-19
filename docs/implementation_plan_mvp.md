@@ -621,7 +621,7 @@ git commit -m "feat(router): set up TanStack Router with root route and QueryCli
 - Create: `src/modules/auth/services/auth.service.ts`
 - Create: `src/modules/auth/services/__tests__/auth.service.test.ts`
 
-- [ ] **Step 1: Create types**
+- [x] **Step 1: Create types**
 
 Create `src/modules/auth/types/auth.types.ts`:
 ```typescript
@@ -644,7 +644,7 @@ export interface AuthResponse {
 }
 ```
 
-- [ ] **Step 2: Write the failing test**
+- [x] **Step 2: Write the failing test**
 
 Create `src/modules/auth/services/__tests__/auth.service.test.ts`:
 ```typescript
@@ -676,7 +676,7 @@ describe("auth service", () => {
 })
 ```
 
-- [ ] **Step 3: Run test to verify it fails**
+- [x] **Step 3: Run test to verify it fails**
 
 ```bash
 pnpm test src/modules/auth/services/__tests__/auth.service.test.ts
@@ -684,7 +684,7 @@ pnpm test src/modules/auth/services/__tests__/auth.service.test.ts
 
 Expected: FAIL — module not found
 
-- [ ] **Step 4: Create `src/modules/auth/services/auth.service.ts`**
+- [x] **Step 4: Create `src/modules/auth/services/auth.service.ts`**
 
 ```typescript
 import { apiClient } from "@/shared/api/client"
@@ -705,7 +705,7 @@ export async function logout(): Promise<void> {
 }
 ```
 
-- [ ] **Step 5: Run test to verify it passes**
+- [x] **Step 5: Run test to verify it passes**
 
 ```bash
 pnpm test src/modules/auth/services/__tests__/auth.service.test.ts
@@ -713,7 +713,7 @@ pnpm test src/modules/auth/services/__tests__/auth.service.test.ts
 
 Expected: PASS
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/modules/auth/

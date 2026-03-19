@@ -522,7 +522,7 @@ git commit -m "test(e2e): set up Playwright config and auth fixture"
 - Create: `src/routes/__root.tsx`
 - Create: `src/routes/index.tsx`
 
-- [ ] **Step 1: Create `src/routes/__root.tsx`**
+- [x] **Step 1: Create `src/routes/__root.tsx`**
 
 ```typescript
 import { createRootRoute, Outlet } from "@tanstack/react-router"
@@ -540,7 +540,7 @@ export const Route = createRootRoute({
 })
 ```
 
-- [ ] **Step 2: Create `src/routes/index.tsx`**
+- [x] **Step 2: Create `src/routes/index.tsx`**
 
 ```typescript
 import { createFileRoute, redirect } from "@tanstack/react-router"
@@ -552,7 +552,7 @@ export const Route = createFileRoute("/")({
 })
 ```
 
-- [ ] **Step 3: Replace `src/App.tsx`**
+- [x] **Step 3: Replace `src/App.tsx`**
 
 ```typescript
 import { RouterProvider, createRouter } from "@tanstack/react-router"
@@ -571,7 +571,7 @@ export default function App() {
 }
 ```
 
-- [ ] **Step 4: Update `src/main.tsx`**
+- [x] **Step 4: Update `src/main.tsx`**
 
 ```typescript
 import { StrictMode } from "react"
@@ -595,7 +595,7 @@ createRoot(document.getElementById("root")!).render(
 )
 ```
 
-- [ ] **Step 5: Run dev server, confirm no errors**
+- [x] **Step 5: Run dev server, confirm no errors**
 
 ```bash
 pnpm dev
@@ -603,7 +603,7 @@ pnpm dev
 
 Expected: App starts, `routeTree.gen.ts` auto-generated, no console errors
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/

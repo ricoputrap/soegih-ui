@@ -449,13 +449,13 @@ git commit -m "feat(auth): add AuthContext, AuthProvider, and useAuth hook"
 
 > **Note:** This task sets up the E2E testing infrastructure required for all downstream E2E tests. Run this early so E2E tests can be executed immediately after each module is complete.
 
-- [ ] **Step 1: Initialize Playwright**
+- [x] **Step 1: Initialize Playwright**
 
 ```bash
 pnpm exec playwright install
 ```
 
-- [ ] **Step 2: Create `playwright.config.ts`**
+- [x] **Step 2: Create `playwright.config.ts`**
 
 ```typescript
 import { defineConfig, devices } from "@playwright/test"
@@ -481,7 +481,7 @@ export default defineConfig({
 })
 ```
 
-- [ ] **Step 3: Create `e2e/fixtures/auth.fixture.ts`**
+- [x] **Step 3: Create `e2e/fixtures/auth.fixture.ts`**
 
 ```typescript
 import { type Page } from "@playwright/test"
@@ -498,14 +498,14 @@ export async function loginAs(page: Page, email = TEST_EMAIL, password = TEST_PA
 }
 ```
 
-- [ ] **Step 4: Add E2E env vars to `.env.example`**
+- [x] **Step 4: Add E2E env vars to `.env.example`**
 
 ```
 E2E_TEST_EMAIL=test@example.com
 E2E_TEST_PASSWORD=password123
 ```
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add playwright.config.ts e2e/ .env.example

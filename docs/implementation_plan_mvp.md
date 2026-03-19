@@ -1370,7 +1370,13 @@ export function WalletTable({ wallets, onEdit, onDelete }: WalletTableProps) {
 
 - [ ] **Step 2: Create `src/modules/wallet/components/WalletCards.tsx`**
 
+Mobile card grid layout (2 columns) with compact design and icon buttons.
+
 ```typescript
+import { MoreVertical } from "lucide-react"
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import type { Wallet } from "../types/wallet.types"
 
 interface WalletCardsProps {
@@ -1381,20 +1387,32 @@ interface WalletCardsProps {
 
 export function WalletCards({ wallets, onEdit, onDelete }: WalletCardsProps) {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="grid grid-cols-2 gap-3">
       {wallets.map((wallet) => (
-        <div key={wallet.id} className="rounded-lg border p-4 flex items-start justify-between gap-4">
-          <div>
-            <p className="font-medium">{wallet.name}</p>
-            <p className="text-xs text-muted-foreground capitalize">{wallet.type.replace("_", " ")}</p>
-            <p className="text-sm font-mono mt-1">
-              {Number(wallet.balance).toLocaleString("id-ID", { style: "currency", currency: "IDR" })}
-            </p>
+        <div key={wallet.id} className="rounded-lg border p-4 flex flex-col justify-between h-full">
+          {/* Card Header with menu */}
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex-1">
+              <p className="font-semibold text-sm">{wallet.name}</p>
+              <p className="text-xs text-muted-foreground capitalize mt-0.5">{wallet.type.replace("_", " ")}</p>
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="p-1 hover:bg-muted rounded transition-colors">
+                  <MoreVertical className="h-4 w-4 text-muted-foreground" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-32">
+                <DropdownMenuItem onClick={() => onEdit(wallet)}>Edit</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onDelete(wallet)} className="text-destructive">Delete</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-          <div className="flex gap-2 shrink-0">
-            <button onClick={() => onEdit(wallet)} className="text-xs text-muted-foreground hover:text-foreground">Edit</button>
-            <button onClick={() => onDelete(wallet)} className="text-xs text-destructive hover:underline">Delete</button>
-          </div>
+
+          {/* Balance */}
+          <p className="text-sm font-mono font-medium">
+            {Number(wallet.balance).toLocaleString("id-ID", { style: "currency", currency: "IDR" })}
+          </p>
         </div>
       ))}
     </div>
@@ -1402,10 +1420,14 @@ export function WalletCards({ wallets, onEdit, onDelete }: WalletCardsProps) {
 }
 ```
 
+> **Note:** Requires `dropdown-menu` shadcn component: `pnpm dlx shadcn@latest add dropdown-menu`
+
 - [ ] **Step 3: Create `src/routes/_app.wallets.tsx`**
 
+Includes total balance summary (mobile and desktop).
+
 ```typescript
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { createFileRoute } from "@tanstack/react-router"
 import { Button } from "@/components/ui/button"
 import { PageHeader } from "@/shared/components/PageHeader"
@@ -1431,6 +1453,11 @@ function WalletsPage() {
   const [editingWallet, setEditingWallet] = useState<Wallet | null>(null)
   const [deletingWallet, setDeletingWallet] = useState<Wallet | null>(null)
 
+  // Calculate total balance
+  const totalBalance = useMemo(() => {
+    return wallets.reduce((sum, w) => sum + Number(w.balance), 0)
+  }, [wallets])
+
   const handleFormSubmit = async (data: { name: string; type: Wallet["type"]; balance: number }) => {
     if (editingWallet) {
       await updateMutation.mutateAsync({ id: editingWallet.id, data })
@@ -1450,11 +1477,22 @@ function WalletsPage() {
 
       {wallets.length > 0 && (
         <>
+          {/* Total Balance Summary */}
+          <div className="mb-6 p-4 rounded-lg border bg-muted/30">
+            <p className="text-xs text-muted-foreground">Total Balance</p>
+            <p className="text-2xl font-bold">
+              {totalBalance.toLocaleString("id-ID", { style: "currency", currency: "IDR" })}
+            </p>
+          </div>
+
+          {/* Desktop Table View */}
           <div className="hidden md:block">
             <WalletTable wallets={wallets}
               onEdit={(w) => { setEditingWallet(w); setFormOpen(true) }}
               onDelete={setDeletingWallet} />
           </div>
+
+          {/* Mobile Card Grid View */}
           <div className="md:hidden">
             <WalletCards wallets={wallets}
               onEdit={(w) => { setEditingWallet(w); setFormOpen(true) }}
@@ -1477,11 +1515,17 @@ function WalletsPage() {
 }
 ```
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 4: Add dropdown-menu shadcn component (if not already added)**
+
+```bash
+pnpm dlx shadcn@latest add dropdown-menu
+```
+
+- [ ] **Step 5: Commit**
 
 ```bash
 git add src/modules/wallet/ src/routes/_app.wallets.tsx
-git commit -m "feat(wallet): add wallet list page with table, cards, create/edit/delete"
+git commit -m "feat(wallet): add wallet list page with total balance, table (desktop), and 2-col card grid (mobile)"
 ```
 
 ---

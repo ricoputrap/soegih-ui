@@ -729,7 +729,7 @@ git commit -m "feat(auth): add auth service (login, signup, logout)"
 - Create: `src/routes/_auth.login.tsx`
 - Create: `src/routes/_auth.signup.tsx`
 
-- [ ] **Step 1: Create `src/routes/_auth.tsx`** (unauthenticated layout)
+- [x] **Step 1: Create `src/routes/_auth.tsx`** (unauthenticated layout)
 
 ```typescript
 import { createFileRoute, Outlet } from "@tanstack/react-router"
@@ -745,7 +745,7 @@ export const Route = createFileRoute("/_auth")({
 })
 ```
 
-- [ ] **Step 2: Create `src/routes/_auth.login.tsx`**
+- [x] **Step 2: Create `src/routes/_auth.login.tsx`**
 
 ```typescript
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
@@ -815,7 +815,7 @@ function LoginPage() {
 }
 ```
 
-- [ ] **Step 3: Create `src/routes/_auth.signup.tsx`**
+- [x] **Step 3: Create `src/routes/_auth.signup.tsx`**
 
 ```typescript
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
@@ -885,11 +885,11 @@ function SignupPage() {
 }
 ```
 
-- [ ] **Step 4: Manually test login/signup pages in browser**
+- [x] **Step 4: Manually test login/signup pages in browser**
 
 Navigate to `http://localhost:5173/login` — form should render
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/routes/
